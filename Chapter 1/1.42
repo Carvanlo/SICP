@@ -1,0 +1,9 @@
+#lang planet neil/sicp
+
+(define (compose f g x)
+  (lambda (x)
+  (g (f x))))
+
+
+
+
