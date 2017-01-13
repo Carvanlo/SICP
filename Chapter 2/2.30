@@ -1,0 +1,42 @@
+#lang planet neil/sicp
+
+;first definition
+
+(define (square-tree-a tree)
+  (cond
+    ((empty-tree? tree) nil)
+    ((one-argument? tree) (square tree))
+    (else
+     (cons (square-tree-a (left-branch tree))
+           (square-tree-a (right-branch tree))))))
+
+(define (left-branch tree)
+  (car tree))
+
+(define (right-branch tree)
+  (cadr tree))
+
+(define (empty-tree? tree)
+  (null? tree))
+
+(define (one-argument? tree)
+  (not (pair? tree)))
+
+(define (square x)
+  (* x x))
+
+;second definition
+
+(define (map proc items)
+  (if (null? items)
+      nil
+      (cons (proc (car items))
+            (map proc (cdr items)))))
+
+(define (square-tree-b tree)
+  (map (lambda (sub-tree)
+         (if (pair? sub-tree)
+             (square-tree-b sub-tree)
+             (square sub-tree)))
+       tree))
+

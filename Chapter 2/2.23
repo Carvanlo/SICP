@@ -1,0 +1,13 @@
+#lang planet neil/sicp
+
+(define (for-each-a p lst)
+  (if (not (null? lst))
+      (begin
+        (p (car lst))
+        (for-each-a p (cdr lst)))))
+
+(define (for-each-b p lst)
+  (cond ((not (null? lst))
+         (p (car lst))
+         (for-each-b p (cdr lst)))))
+

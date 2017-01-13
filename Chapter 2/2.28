@@ -1,0 +1,31 @@
+#lang planet neil/sicp
+
+(define (fringe tree)
+  (cond ((null? tree)
+         '())
+        ((not (pair? tree))
+         (list tree))
+        (else
+         (append (fringe (car tree))
+                 (fringe (cadr tree))))))
+
+(define (better-fringe tree)
+  (cond ((empty-tree? tree)
+         '())
+        ((leaf? tree)
+         (list tree))
+        (else
+         (append (fringe (left-branch tree))
+                 (fringe (right-branch tree))))))
+
+(define (empty-tree? tree)
+  (null? tree))
+
+(define (leaf? tree)
+  (not (pair? tree)))
+
+(define (left-branch tree)
+  (car tree))
+
+(define (right-branch tree)
+  (cadr tree))

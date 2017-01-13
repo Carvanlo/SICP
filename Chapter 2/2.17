@@ -1,0 +1,9 @@
+#lang planet neil/sicp
+
+(define (last-pair l)
+  (cond
+    ((null? l) (error "list empty -- LAST-PAIR"))
+    ((null? (cdr l)) l)
+    (else
+     (last-pair (cdr l)))))
+

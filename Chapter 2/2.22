@@ -1,0 +1,49 @@
+#lang planet neil/sicp
+
+(define (square-list-a items)
+  (define (iter things answer)
+    (if (null? things)
+        answer
+        (iter (cdr things)
+              (cons (square (car things))
+                    answer))))
+  (iter items '()))
+
+(define (square x)
+  (* x x))
+
+(define (square-list-b items)
+  (define (iter things answer)
+    (if (null? things)
+        answer
+        (iter (cdr things)
+              (cons answer
+                    (square (car things))))))
+  (iter items '()))
+
+(define (square-list-c items)
+  (define (iter things answer)
+    (if (null? things)
+        (reverse answer)
+        (iter (cdr things)
+              (cons (square (car things))
+                    answer))))
+  (iter items '()))
+
+(define (reverse lst)
+  (iter lst '()))
+
+(define (iter remained-items result)
+  (if (null? remained-items)
+      result
+      (iter (cdr remained-items)
+            (cons (car remained-items) result))))
+
+(define (square-list-d items)
+  (define (iter things answer)
+    (if (null? things)
+        answer
+        (iter (cdr things)
+              (cons (square (car things))
+                    answer))))
+  (iter (reverse items) '()))
