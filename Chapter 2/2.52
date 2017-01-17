@@ -1,0 +1,100 @@
+#lang racket
+(require (planet "sicp.ss" ("soegaard" "sicp.plt" 2 1)))
+
+(define (make-vect xcor ycor)
+  (list xcor ycor))
+
+(define (make-segment start end)
+  (list start end))
+
+; part a
+
+(segments->painter (list (make-segment (make-vect 0.0 1.0)
+                                       (make-vect 1.0 1.0))
+                         ; ... wave picture
+                         ))
+
+; part b
+
+(define (split big-combiner small-combiner)
+  (define (inner painter n)
+    (if (= n 0)
+        painter
+        (let ((smaller (inner painter (- n 1))))
+          (big-combiner painter
+                        (small-combiner smaller smaller)))))
+  inner)
+
+(define right-split (split beside below))
+(define up-split (split below beside))
+
+(define (corner-split painter n)
+  (if (= n 0)
+      painter
+      (let ((up (up-split painter (- n 1)))
+            (right (right-split painter (- n 1)))
+            (corner (corner-split painter (- n 1))))
+        (beside (below painter up)
+                (below right corner)))))
+
+; part c
+
+(define (xcor-vect v)
+  (car v))
+
+(define (ycor-vect v)
+  (cadr v))
+
+(define (sub-vect vect another-vect)
+  (make-vect (- (xcor-vect vect)
+                (xcor-vect another-vect))
+             (- (ycor-vect vect)
+                (ycor-vect another-vect))))
+
+
+(define (square-of-four tl tr bl br)
+  (lambda (painter)
+    (let ((top (beside (tl painter) (tr painter)))
+          (bottom (beside (bl painter) (br painter))))
+      (below bottom top))))
+
+(define (transform-painter painter origin corner1 corner2)
+  (lambda (frame)
+    (let ((m (frame-coord-map frame)))
+      (let ((new-origin (m origin)))
+        (painter
+         (make-frame new-origin
+                     (sub-vect (m corner1) new-origin)
+                     (sub-vect (m corner2) new-origin)))))))
+
+(define (flop-horiz painter)
+  (transform-painter painter
+                     (make-vect 1.0 0.0)
+                     (make-vect 0.0 0.0)
+                     (make-vect 1.0 1.0)))
+
+(define (rotate180 painter)
+  (transform-painter painter
+                     (make-vect 1.0 1.0)
+                     (make-vect 0.0 1.0)
+                     (make-vect 1.0 0.0)))
+
+(define (flip-vect painter)
+  (transform-painter painter
+                     (make-vect 0.0 1.0)
+                     (make-vect 1.0 1.0)
+                     (make-vect 0.0 0.0)))
+
+(define (square-limit painter n)
+  (let ((combine4 (square-of-four identity flip-horiz
+                                  flip-vect rotate180)))
+        (combine4 (corner-split painter n))))
+
+
+                  
+     
+
+
+
+
+

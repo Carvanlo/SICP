@@ -1,0 +1,86 @@
+#lang racket
+(require (planet "sicp.ss" ("soegaard" "sicp.plt" 2 1)))
+
+; first definition
+
+(define (below-a painter1 painter2)
+  (let ((split-point (make-vect 0.0 0.5)))
+    (let ((paint-down
+           (transform-painter painter1
+                              (make-vect 0.0 0.0)
+                              (make-vect 1.0 0.0)
+                              split-point))
+          (paint-top
+           (transform-painter painter2
+                              split-point
+                              (make-vect 1.0 0.5)
+                              (make-vect 0.0 1.0))))
+      (lambda (frame)
+        (paint-top frame)
+        (paint-down frame)))))
+
+; second definiton
+
+(define (make-vect xcor ycor)
+  (list xcor ycor))
+
+(define (xcor-vect v)
+  (car v))
+
+(define (ycor-vect v)
+  (cadr v))
+
+(define (sub-vect vect another-vect)
+  (make-vect (- (xcor-vect vect)
+                (xcor-vect another-vect))
+             (- (ycor-vect vect)
+                (ycor-vect another-vect))))
+
+
+(define (transform-painter painter origin corner1 corner2)
+  (lambda (frame)
+    (let ((m (frame-coord-map frame)))
+      (let ((new-origin (m origin)))
+        (painter
+         (make-frame new-origin
+                     (sub-vect (m corner1) new-origin)
+                     (sub-vect (m corner2) new-origin)))))))
+
+(define (flop-horiz painter)
+  (transform-painter painter
+                     (make-vect 1.0 0.0)
+                     (make-vect 0.0 0.0)
+                     (make-vect 1.0 1.0)))
+
+(define (rotate180 painter)
+  (transform-painter painter
+                     (make-vect 1.0 1.0)
+                     (make-vect 0.0 1.0)
+                     (make-vect 1.0 0.0)))
+
+(define (rotate270 painter)
+  (transform-painter painter
+                     (make-vect 0.0 1.0)
+                     (make-vect 0.0 0.0)
+                     (make-vect 1.0 1.0)))
+
+(define (rotate90 painter)
+  (transform-painter painter
+                     (make-vect 1.0 0.0)
+                     (make-vect 1.0 1.0)
+                     (make-vect 0.0 0.0)))
+
+(define (below-b painter1 painter2)
+  (lambda (frame)
+    ((flop-horiz
+      (rotate90
+       (beside
+        (rotate270
+         (flip-horiz painter1))
+        (rotate270
+         (flip-horiz painter2)))))
+     frame)))
+
+
+      
+  
