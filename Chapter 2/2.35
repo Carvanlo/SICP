@@ -1,0 +1,41 @@
+#lang planet neil/sicp
+
+(define (accumulate op initial sequence)
+  (if (null? sequence)
+      initial
+      (op (car sequence)
+          (accumulate op initial (cdr sequence)))))
+
+; first definition
+
+(define (fringe tree)
+  (cond ((null? tree)
+         '())
+        ((not (pair? tree))
+         (list tree))
+        (else (append (fringe (car tree))
+                      (fringe (cadr tree))))))
+
+(define (count-leaves-a tree)
+  (accumulate (lambda (current-leave remained-leaves-count)
+                (+ 1 remained-leaves-count))
+              0
+              (fringe tree)))
+
+; second definition
+
+(define (map proc items)
+  (if (null? items)
+      nil
+      (cons (proc (car items))
+            (map proc (cdr items)))))
+
+(define (count-leaves-b tree)
+  (accumulate +
+              0
+              (map (lambda (sub-tree)
+                     (if (pair? sub-tree)
+                         (count-leaves-b sub-tree)
+                         1))
+                   tree)))
+

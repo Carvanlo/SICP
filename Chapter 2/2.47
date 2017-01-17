@@ -1,0 +1,34 @@
+#lang planet neil/sicp
+
+(define (make-vect xcor ycor)
+  (list xcor ycor))
+
+; first definition
+
+(define (make-frame-a origin edge1 edge2)
+  (list origin edge1 edge2))
+
+(define (origin-frame-a f)
+  (car f))
+
+(define (edge1-frame-a f)
+  (cadr f))
+
+(define (edge2-frame-a f)
+  (caddr f))
+
+; second definition
+
+(define (make-frame-b origin edge1 edge2)
+  (cons origin
+        (cons edge1 edge2)))
+
+(define (origin-frame-b f)
+  (car f))
+
+(define (edge1-frame-b f)
+  (cadr f))
+
+(define (edge2-frame-b f)
+  (cddr f))
+
