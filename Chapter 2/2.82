@@ -1,0 +1,49 @@
+(define (apply-generic op . args)
+  (define (iter type-tags args)
+    (if (null? type-tags)
+        (error "No method for these types-ITER")
+        (let ((type1 (car type-tags)))
+          (let ((filtered-args (true-map (lambda (x)
+                                           {{{scheme
+                                              (let ((type2 (type-tag x)))
+                                                (if (eq? type1 type2)
+                                                    x
+                                                    (let ((t2->t1 (get-coercion type2 type1)))
+                                                      (if (null? t2->t1) #f (t2->t1 x)))))}
+                                             args}})
+                                         (or filtered-args
+                                             (iter (cdr type-tags) args))))))
+          (let ((type-tags (map type-tags args)))
+            (let ((proc (get op type-tags)))
+              (if (not (null? proc))
+                  (apply proc (map contents args))
+                  (apply apply-generic (cons op (iter type-tags args))))))))))
+
+(define (true-map proc sequence)
+  (define (true-map-iter proc sequence result)
+    (if (null? sequence)
+        (reverse result)
+        (let ((item (proc (car sequence))))
+          (if item
+              (true-map-iter proc (cdr sequence) (cons item result))
+              #f))))
+  (true-map-iter proc sequence '()))
+
+(define *coercion-table* (make-equal-hash-table))
+
+(define (put-coercion type1 type2 proc)
+  (hash-table/put! *coercion-table* (list type1 type2) proc))
+
+(define (get-coercion type1 type2)
+  (hash-table/get *coercion-table* (list type1 type2) '()))
+
+(define (install-coercion-package)
+  (define (scheme-number->complex n)
+    (make-complex-from-real-imag (contents n) 0))
+  (define (scheme-number->rational n)
+    (make-rational (contents n) 1))
+  (put-coercion 'scheme-number 'rational scheme-number->rational)
+  (put-coercion 'scheme-number 'complex scheme-number->complex)
+'done)
+
+(install-coercion-package)
