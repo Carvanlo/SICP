@@ -1,0 +1,86 @@
+(define (make-mutex)
+  (let ((cell (list false)))
+    (define (the-mutex m)
+      (cond ((eq? m 'acquire)
+             (if (test-and-set! cell)
+                 (the-mutex 'acquire)))
+            ((eq? m 'release) (clear! cell))))
+    the-mutex))
+(define (clear! cell)
+  (set-car! cell false))
+
+(define (test-and-set! cell)
+  (if (car cell)
+      true
+      (begin (set-car! cell true)
+             false)))
+
+(define (make-serializer)
+  (let ((mutex (make-mutex)))
+    (lambda (p)
+      (define (serialized-p . args)
+        (mutex 'acquire)
+        (let ((val (apply p args)))
+          (mutex 'release)
+          val))
+      serialized-p)))
+
+(define (make-account balance)
+
+  (let ((id (generate-account-id)))
+
+    (define (withdraw amount)
+      (if (>= balance amount)
+          (begin (set! balance (- balance amount))
+                 balance)
+          "Insufficient funds"))
+
+    (define (deposit amount)
+      (set! balance (+ balance amount))
+      balance)
+
+    (let ((balance-serializer (make-serializer)))
+      (define (dispatch m)
+        (cond
+          ((eq? m 'withdraw)
+           withdraw)
+          ((eq? m 'deposit)
+           deposit)
+          ((eq? m 'balance)
+           balance)
+          ((eq? m 'serializer)
+           balance-serializer)
+          ((eq? m 'id)
+           id)
+          (else
+           (error "Unknown request -- MAKE-ACCOUNT" m))))
+      dispatch)))
+
+(define (counter)
+  (let ((i 0))
+    (lambda ()
+      (set! i (+ i 1))
+      i)))
+
+(define generate-account-id (counter))
+
+(define (exchange account1 account2)
+  (let ((difference (- (account1 'balance)
+                       (account2 'balance))))
+    ((account1 'withdraw) difference)
+    ((account2 'deposit) difference)))
+
+(define (serialized-exchange acc-1 acc-2)
+  (if (< (acc-1 'id) (acc-2 'id))
+      (serialize-and-exchange acc-1 acc-2)
+      (serialize-and-exchange acc-2 acc-1)))
+
+(define (serialize-and-exchange smaller-id-account bigger-id-account)
+  (let ((smaller-serializer (smaller-id-account 'serializer)))
+    (let ((bigger-serializer (bigger-id-account 'serializer)))
+      ((smaller-serializer (bigger-serializer exchange))
+       smaller-id-account
+       bigger-id-account))))
+
+
+        
