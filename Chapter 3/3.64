@@ -1,0 +1,38 @@
+(define (stream-limit stream tolerance)
+  (let ((ref-n (stream-car stream))
+        (ref-n+1 (stream-car (stream-cdr stream))))
+    (if (close-enough? ref-n ref-n+1 tolerance)
+        ref-n+1
+        (stream-limit (stream-cdr stream) tolerance))))
+
+(define (close-enough? x y tolerance)
+  (< (abs (- x y))
+     tolerance))
+
+; test
+
+(define (stream-car stream) (car stream))
+(define (stream-cdr stream) (force (cdr stream)))
+
+(define (stream-map proc s)
+  (if (stream-null? s)
+      '()
+      (cons-stream (proc (stream-car s))
+                         (stream-map proc (stream-cdr s)))))
+
+(define (sqrt-improve guess x)
+  (average guess (/ x guess)))
+
+(define (sqrt-stream x)
+  (define guesses
+    (cons-stream 1.0
+                 (stream-map (lambda (guess)
+                               (sqrt-improve guess x))
+                             guesses)))
+  guesses)
+
+(define (sqrt x tolerance)
+  (stream-limit (sqrt-stream x) tolerance))
+
+(define (average x y)
+  (/ (+ x y) 2))
